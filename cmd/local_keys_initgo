@@ -1,0 +1,19 @@
+package cmd
+
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
+
+var localKeysInitCmd = &cobra.Command{
+	Use:   "init",
+	Short: "Initialize local key storage",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return fmt.Errorf("not implemented")
+	},
+}
+
+func init() {
+	localKeysCmd.AddCommand(localKeysInitCmd)
+}
