@@ -52,15 +52,14 @@ var localKeysInitCmd = &cobra.Command{
 }
 
 var localKeysEditCmd = &cobra.Command{
-	Use:	"edit",
-	Short: 	"Edit local key store",
+	Use:   "edit",
+	Short: "Edit local key store",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var test vault.LocalVault
 
 		if err := test.LoadFromFile("config-lv.yml"); err != nil {
 			panic(err)
 		}
-
 
 		tmpFile, err := os.CreateTemp("", "example-*.txt")
 		if err != nil {
@@ -108,15 +107,14 @@ var localKeysEditCmd = &cobra.Command{
 }
 
 var localKeysReadCmd = &cobra.Command{
-	Use:	"read",
-	Short: 	"View Key Store",
+	Use:   "read",
+	Short: "View Key Store",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var test vault.LocalVault
 
 		if err := test.LoadFromFile("config-lv.yml"); err != nil {
 			panic(err)
 		}
-
 
 		passphrase, err := get_passphrase()
 		defer clear(passphrase)
