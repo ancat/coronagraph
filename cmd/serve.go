@@ -44,6 +44,7 @@ func get_secrets() map[string]string {
 
 	fmt.Fprintf(os.Stderr, "Passphrase: ")
 	passphrase, err := term.ReadPassword(int(os.Stdin.Fd()))
+	defer fmt.Fprintf(os.Stderr, "\n")
 	defer clear(passphrase)
 
 	contents, err := local_vault.ReadData(passphrase)

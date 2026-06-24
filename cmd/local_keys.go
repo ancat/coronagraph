@@ -14,6 +14,7 @@ import (
 
 func get_passphrase() ([]byte, error) {
 	fmt.Fprintf(os.Stderr, "Passphrase: ")
+	defer fmt.Fprintf(os.Stderr, "\n")
 	return term.ReadPassword(int(os.Stdin.Fd()))
 }
 
