@@ -83,10 +83,11 @@ func runServe(cmd *cobra.Command, args []string) error {
 		resp, stop, svc := service.Process(services, req, authenticate)
 		if svc != nil {
 			if stop {
-				log.Printf("Dropping request for %s\n", svc.Name())
+				log.Printf("[%s][DROPPED] %s %s\n", svc.Name(), req.Method, req.URL.Path)
 				return resp, true
 			}
-			log.Printf("Allowing request for %s\n", svc.Name())
+
+			log.Printf("[%s][ALLOWED] %s %s\n", svc.Name(), req.Method, req.URL.Path)
 			return nil, false
 		}
 		log.Printf("No service matched request %s\n", req.URL.String())
