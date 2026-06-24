@@ -1,7 +1,9 @@
 package service
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -36,8 +38,35 @@ func (s *GitHub) InsertAuthentication(req *http.Request) {
 
 // DropRequest blocks state-changing requests. GET is allowed without confirmation.
 func (s *GitHub) DropRequest(req *http.Request) (*http.Response, bool) {
-	if req.Method != http.MethodGet {
-		return syntheticResponse(http.StatusForbidden, fmt.Sprintf("dropped due to policy violation (%s)\n", req.Method)), true
+	if req.Method == http.MethodGet {
+		return nil, false
 	}
-	return nil, false
+
+	// TODO: path canonicalization necessary
+	if req.URL.Path == "/graphql" && req.Method == http.MethodPost && req.Body != nil {
+		body, err := io.ReadAll(req.Body)
+		if err != nil {
+			fmt.Printf("POST body: <failed to read: %v>\n", err)
+		} else {
+			// Restore body after reading.
+			req.Body = io.NopCloser(bytes.NewReader(body))
+
+			fmt.Printf("POST body:\n%s\n", string(body))
+
+			// lol
+			if bytes.Contains(body, []byte("mutation")) {
+				return syntheticResponse(
+					http.StatusForbidden,
+					fmt.Sprintf("dropped due to policy violation (graphql mutation)\n"),
+				), true
+			} else {
+				return nil, false
+			}
+		}
+	}
+
+	return syntheticResponse(
+		http.StatusForbidden,
+		fmt.Sprintf("dropped due to policy violation (%s)\n", req.Method),
+	), true
 }
