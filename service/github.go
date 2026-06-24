@@ -36,7 +36,7 @@ func (s *GitHub) InsertAuthentication(req *http.Request) {
 	req.Header.Set("Authorization", fmt.Sprintf("token %s", s.token))
 }
 
-// DropRequest blocks state-changing requests. GET is allowed without confirmation.
+// Allow GETs and non-mutating graphql queries
 func (s *GitHub) DropRequest(req *http.Request) (*http.Response, bool) {
 	if req.Method == http.MethodGet {
 		return nil, false
@@ -46,18 +46,20 @@ func (s *GitHub) DropRequest(req *http.Request) (*http.Response, bool) {
 	if req.URL.Path == "/graphql" && req.Method == http.MethodPost && req.Body != nil {
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
+			// this will fall through and block the request
 			fmt.Printf("POST body: <failed to read: %v>\n", err)
 		} else {
 			// Restore body after reading.
 			req.Body = io.NopCloser(bytes.NewReader(body))
-
 			fmt.Printf("POST body:\n%s\n", string(body))
 
-			// lol
+			/* TODO: I think the only safe way to handle this is to parse the JSON
+			   It looks something like `{"query": "\n\tmutation..."}`
+			*/
 			if bytes.Contains(body, []byte("mutation")) {
 				return syntheticResponse(
 					http.StatusForbidden,
-					fmt.Sprintf("dropped due to policy violation (graphql mutation)\n"),
+					"dropped due to policy violation (graphql mutation)\n",
 				), true
 			} else {
 				return nil, false
