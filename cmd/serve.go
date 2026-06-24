@@ -16,9 +16,9 @@ import (
 )
 
 var (
-	servePort     int
-	serveCACert   string
-	serveCAKey    string
+	servePort   int
+	serveCACert string
+	serveCAKey  string
 )
 
 var serveCmd = &cobra.Command{
@@ -60,7 +60,6 @@ func get_secrets() map[string]string {
 
 	return secret_env
 }
-
 
 func runServe(cmd *cobra.Command, args []string) error {
 	if servePort < 1 || servePort > 65535 {

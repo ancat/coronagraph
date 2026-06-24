@@ -42,9 +42,9 @@ func New(ca *CA) *Proxy {
 				return http.ErrUseLastResponse
 			},
 			Transport: &http.Transport{
-				Proxy:              nil, // never chain through another proxy
-				ForceAttemptHTTP2:  false,
-				TLSNextProto:       make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
+				Proxy:             nil, // never chain through another proxy
+				ForceAttemptHTTP2: false,
+				TLSNextProto:      make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
 			},
 		},
 	}

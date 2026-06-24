@@ -4,8 +4,8 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"fmt"
 	"encoding/hex"
+	"fmt"
 	"os"
 
 	"golang.org/x/crypto/argon2"
@@ -13,25 +13,26 @@ import (
 )
 
 const V1String = "cg:local:v1"
+
 type LocalVault struct {
 	Vault LocalVaultFile
 }
 
 type LocalVaultFile struct {
-	Version string	`yaml:"version"`
+	Version      string                 `yaml:"version"`
 	CryptoConfig LocalVaultCryptoConfig `yaml:"config"`
-	Data LocalVaultData `yaml:"data"`
+	Data         LocalVaultData         `yaml:"data"`
 }
 
 type LocalVaultCryptoConfig struct {
-	Salt	HexBytes `yaml:"salt"`
-	Key	HexBytes `yaml:"key"`
-	Nonce	HexBytes `yaml:"nonce"`
+	Salt  HexBytes `yaml:"salt"`
+	Key   HexBytes `yaml:"key"`
+	Nonce HexBytes `yaml:"nonce"`
 }
 
 type LocalVaultData struct {
-	Ciphertext	HexBytes `yaml:"ciphertext"`
-	Nonce	HexBytes `yaml:"nonce"`
+	Ciphertext HexBytes `yaml:"ciphertext"`
+	Nonce      HexBytes `yaml:"nonce"`
 }
 
 func (lvf LocalVaultFile) GetAad() []byte {
@@ -116,35 +117,35 @@ func (lv LocalVault) ReadData(passphrase []byte) ([]byte, error) {
 }
 
 func (lv *LocalVault) LoadFromFile(filename string) error {
-		raw, err := os.ReadFile(filename)
-		if err != nil {
-			return err
-		}
+	raw, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
 
-		var lvf LocalVaultFile
-		if err := yaml.Unmarshal(raw, &lvf); err != nil {
-			return err
-		}
+	var lvf LocalVaultFile
+	if err := yaml.Unmarshal(raw, &lvf); err != nil {
+		return err
+	}
 
-		// validate the file structure here
-		lv.Vault = lvf
-		return nil
+	// validate the file structure here
+	lv.Vault = lvf
+	return nil
 }
 
 func (lv LocalVault) WriteToFile(filename string) error {
-		file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
-		if err != nil {
-			return err
-		}
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
 
-		encoder := yaml.NewEncoder(file)
-		defer encoder.Close()
+	encoder := yaml.NewEncoder(file)
+	defer encoder.Close()
 
-		if err := encoder.Encode(&lv.Vault); err != nil {
-			return err
-		}
+	if err := encoder.Encode(&lv.Vault); err != nil {
+		return err
+	}
 
-		return nil
+	return nil
 }
 
 func (lv LocalVault) PrintYAML() error {
@@ -182,7 +183,7 @@ func (h HexBytes) MarshalYAML() (any, error) {
 	return hex.EncodeToString([]byte(h)), nil
 }
 
-func (lv *LocalVault) Init(passphrase []byte) (error) {
+func (lv *LocalVault) Init(passphrase []byte) error {
 	lvf := LocalVaultFile{
 		Version: V1String,
 	}
@@ -204,14 +205,14 @@ func (lv *LocalVault) Init(passphrase []byte) (error) {
 	}
 
 	lvf.CryptoConfig = LocalVaultCryptoConfig{
-			Salt:  HexBytes(argon_salt),
-			Key:   HexBytes(encrypted_dek),
-			Nonce: HexBytes(gcm_nonce),
+		Salt:  HexBytes(argon_salt),
+		Key:   HexBytes(encrypted_dek),
+		Nonce: HexBytes(gcm_nonce),
 	}
 
-	lvf.Data = LocalVaultData {
-			Ciphertext: HexBytes(encrypted_data),
-			Nonce:      HexBytes(data_nonce),
+	lvf.Data = LocalVaultData{
+		Ciphertext: HexBytes(encrypted_data),
+		Nonce:      HexBytes(data_nonce),
 	}
 
 	lv.Vault = lvf
@@ -231,9 +232,9 @@ func derive_kek_from_passphrase(passphrase []byte, salt []byte) []byte {
 
 const (
 	argonTime        uint32 = 1
-	argonMemoryKiB  uint32 = 64 * 1024
-	argonParallelism uint8 = 4
-	keyLength          uint32 = 32
+	argonMemoryKiB   uint32 = 64 * 1024
+	argonParallelism uint8  = 4
+	keyLength        uint32 = 32
 )
 
 func make_argon_salt() []byte {
@@ -289,5 +290,3 @@ func decrypt(key []byte, nonce []byte, ciphertext []byte, aad []byte) ([]byte, e
 
 	return plaintext, nil
 }
-
-
