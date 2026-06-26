@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 
+	"coronagraph/config"
 	"coronagraph/proxy"
 	"coronagraph/service"
 	"coronagraph/vault"
@@ -19,6 +20,7 @@ var (
 	servePort   int
 	serveCACert string
 	serveCAKey  string
+	credentialSource  string
 )
 
 var serveCmd = &cobra.Command{
@@ -28,14 +30,20 @@ var serveCmd = &cobra.Command{
 }
 
 func init() {
+	cg_config, err := config.Load("config.yml")
+	if err != nil {
+		panic(err)
+	}
+
 	rootCmd.AddCommand(serveCmd)
 
-	serveCmd.Flags().IntVar(&servePort, "port", 11111, "port to listen on")
-	serveCmd.Flags().StringVar(&serveCACert, "ca-cert", "rootCA.pem", "CA certificate PEM file")
-	serveCmd.Flags().StringVar(&serveCAKey, "ca-cert-key", "rootCA-key.pem", "CA private key PEM file")
+	servePort = cg_config.Port()
+	serveCACert = cg_config.TLSCertificatePath()
+	serveCAKey = cg_config.TLSKeyPath()
+	credentialSource = cg_config.Credentials()
 }
 
-func get_secrets() map[string]string {
+func get_local_secrets() map[string]string {
 	var local_vault vault.LocalVault
 
 	if err := local_vault.LoadFromFile("config-lv.yml"); err != nil {
@@ -61,17 +69,36 @@ func get_secrets() map[string]string {
 	return secret_env
 }
 
-func runServe(cmd *cobra.Command, args []string) error {
-	if servePort < 1 || servePort > 65535 {
-		return fmt.Errorf("invalid port: %d", servePort)
+func get_op_secrets() map[string]string {
+	contents, err := vault.ReadOP("op://Developer Creds/g4pixtjpdnd7btevhwf74pgw2u/notesPlain")
+	if err != nil {
+		panic(err)
 	}
 
+	secret_env, err := godotenv.Unmarshal(string(contents))
+	if err != nil {
+		panic(err)
+	}
+
+	return secret_env
+}
+
+func runServe(cmd *cobra.Command, args []string) error {
 	ca, err := proxy.LoadCA(serveCACert, serveCAKey)
 	if err != nil {
 		return fmt.Errorf("load CA: %w", err)
 	}
 
-	secret_map := get_secrets()
+	var secret_map map[string]string
+
+	switch credentialSource {
+		case "local-vault":
+			secret_map = get_local_secrets()
+		case "1password":
+			secret_map = get_op_secrets()
+		default:
+			panic("Unknown credential source")
+	}
 
 	services := []service.Service{
 		service.NewRubyGems(secret_map["GEM_HOST_API_KEY"]),
