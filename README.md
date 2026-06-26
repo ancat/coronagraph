@@ -8,11 +8,10 @@ Additionally, for services Coronagraph recognizes, it can quietly authenticate r
 
 ## Setup (CA Certificates)
 
-Because Coronagraph inserts credentials into HTTP requests, it needs to be able to terminate TLS. To do that, we'll use [mkcert](https://github.com/filosottile/mkcert). Generate your certs with it, and if you like, install them to your operating system trust store. Depending on what HTTP clients you use with Coronagraph, this may make your life a lot easier. Otherwise, you may need to point each client at your new certificates.
+Because Coronagraph inserts credentials into HTTP requests, it needs to be able to terminate TLS. To do that, we'll use [mkcert](https://github.com/filosottile/mkcert). Generate your certs with it. We do not recommend you install these certificates to your system store.
 
 ```
 $ mkcert
-$ mkcert -install
 ```
 
 ## Setup coronagraph
@@ -24,19 +23,38 @@ cg local-keys init
 cg local-keys edit
 ```
 
-Init will prompt you to set a passphrase, and all subsequent `local-keys` commands will expect the same one. Edit will pop up a vim editor where you can place your credentials in [Dot Env format](https://www.dotenv.org/docs/security/env.html). Right now, only a local passphrase backed vault (Argon2 for KDF, used to encrypt a randomly generated AES key in GCM mode that's rotated on every write) is supported.
+Init will prompt you to set a passphrase, and all subsequent `local-keys` commands will expect the same one. Edit will pop up a vim editor where you can place your credentials in [Dot Env format](https://www.dotenv.org/docs/security/env.html).
 
-To start the proxy, you will need to point it at the CA Certificate you made with `mkcert` and enter your passphrase from earlier.
+If you have 1Password and the `op` command line tool installed, you can use this instead; just create a Secure Note with the same contents and `cg` will pull them on start.
 
+After setting up your credentials, you can configure Coronagraph.
+
+```yaml
+coronagraph:
+  port: 11111
+  credentials: local-vault
+  tls:
+    certificate: /Users/omar/src/cryptfs/certs/rootCA.pem
+    key: /Users/omar/src/cryptfs/certs/rootCA-key.pem
 ```
-cg serve --ca-cert ~/Library/Application\ Support/mkcert/rootCA.pem --ca-cert-key ~/Library/Application\ Support/mkcert/rootCA-key.pem
+
+Or if you're using 1password:
+
+```yaml
+coronagraph:
+  port: 11111
+  credentials: 1password
+  op_secret_ref: op://Developer Creds/g4pixtjpdnd7btevhwf74pgw2u/notesPlain
+  tls:
+    certificate: /Users/omar/src/cryptfs/certs/rootCA.pem
+    key: /Users/omar/src/cryptfs/certs/rootCA-key.pem
 ```
 
-By default, it will listen on `localhost:11111`. At this point, you can point any HTTP client at this proxy. If you did not install the CA certificate and key to your system trust store, you will also need to configure each client to find them.
+Then just run `cg serve` and you should be set. At this point, you can point any HTTP client at this proxy. For each client, you will need to configure their TLS settings to include the TLS certificate you used in your config file. See `Credential Support` for more information.
 
 ## Credential Support
 
-Right now, coronagraph supports Rubygems (gem and bundler) and Github. To set them up, use `cg local-keys edit`.
+Right now, coronagraph supports Rubygems (gem and bundler) and Github.
 
 * Rubygems: `GEM_HOST_API_KEY`
 - `export GEM_HOST_API_KEY=placeholder`
