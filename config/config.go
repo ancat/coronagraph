@@ -21,6 +21,7 @@ type Config struct {
 type CoronagraphConfig struct {
 	Port        *int      `yaml:"port"`
 	Credentials string    `yaml:"credentials"`
+	OPSecretRef string    `yaml:"op_secret_ref"`
 	TLS         TLSConfig `yaml:"tls"`
 }
 
@@ -50,6 +51,10 @@ func Load(path string) (*Config, error) {
 func (c *Config) Validate() error {
 	if c.Coronagraph.Credentials != CredentialsLocalVault && c.Coronagraph.Credentials != Credentials1Password {
 		return fmt.Errorf("unsupported credentials backend %q", c.Coronagraph.Credentials)
+	}
+
+	if c.Coronagraph.Credentials == Credentials1Password && c.Coronagraph.OPSecretRef == "" {
+		return fmt.Errorf("if credential store is 1password, op_secret_ref must be set")
 	}
 
 	if err := validateExistingAbsoluteFile("tls.certificate", c.Coronagraph.TLS.Certificate); err != nil {
@@ -101,4 +106,8 @@ func (c *Config) TLSCertificatePath() string {
 
 func (c *Config) TLSKeyPath() string {
 	return c.Coronagraph.TLS.Key
+}
+
+func (c *Config) OPSecretRef() string {
+	return c.Coronagraph.OPSecretRef
 }

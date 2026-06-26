@@ -21,6 +21,7 @@ var (
 	serveCACert string
 	serveCAKey  string
 	credentialSource  string
+	opSecretRef  string
 )
 
 var serveCmd = &cobra.Command{
@@ -41,6 +42,7 @@ func init() {
 	serveCACert = cg_config.TLSCertificatePath()
 	serveCAKey = cg_config.TLSKeyPath()
 	credentialSource = cg_config.Credentials()
+	opSecretRef = cg_config.OPSecretRef()
 }
 
 func get_local_secrets() map[string]string {
@@ -69,8 +71,8 @@ func get_local_secrets() map[string]string {
 	return secret_env
 }
 
-func get_op_secrets() map[string]string {
-	contents, err := vault.ReadOP("op://Developer Creds/g4pixtjpdnd7btevhwf74pgw2u/notesPlain")
+func get_op_secrets(op_secret_ref string) map[string]string {
+	contents, err := vault.ReadOP(op_secret_ref)
 	if err != nil {
 		panic(err)
 	}
@@ -95,7 +97,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 		case "local-vault":
 			secret_map = get_local_secrets()
 		case "1password":
-			secret_map = get_op_secrets()
+			secret_map = get_op_secrets(opSecretRef)
 		default:
 			panic("Unknown credential source")
 	}
