@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	DefaultPort              = 11111
-	CredentialsLocalVault    = "local-vault"
-	Credentials1Password     = "1password"
+	DefaultPort           = 11111
+	CredentialsLocalVault = "local-vault"
+	Credentials1Password  = "1password"
 )
 
 type Config struct {

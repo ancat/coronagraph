@@ -17,11 +17,11 @@ import (
 )
 
 var (
-	servePort   int
-	serveCACert string
-	serveCAKey  string
-	credentialSource  string
-	opSecretRef  string
+	servePort        int
+	serveCACert      string
+	serveCAKey       string
+	credentialSource string
+	opSecretRef      string
 )
 
 var serveCmd = &cobra.Command{
@@ -94,12 +94,12 @@ func runServe(cmd *cobra.Command, args []string) error {
 	var secret_map map[string]string
 
 	switch credentialSource {
-		case "local-vault":
-			secret_map = get_local_secrets()
-		case "1password":
-			secret_map = get_op_secrets(opSecretRef)
-		default:
-			panic("Unknown credential source")
+	case "local-vault":
+		secret_map = get_local_secrets()
+	case "1password":
+		secret_map = get_op_secrets(opSecretRef)
+	default:
+		panic("Unknown credential source")
 	}
 
 	services := []service.Service{
