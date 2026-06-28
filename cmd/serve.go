@@ -13,6 +13,7 @@ import (
 	"coronagraph/config"
 	"coronagraph/proxy"
 	"coronagraph/service"
+	"coronagraph/sudo"
 	"coronagraph/vault"
 )
 
@@ -109,7 +110,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 
 	p := proxy.New(ca)
 	p.InterceptRequest = func(req *http.Request) (*http.Response, bool) {
-		resp, stop, svc := service.Process(services, req, authenticate)
+		resp, stop, svc := service.Process(services, req, sudo.Authenticate)
 		if svc != nil {
 			if stop {
 				log.Printf("[%s][DROPPED] %s %s\n", svc.Name(), req.Method, req.URL.Path)
