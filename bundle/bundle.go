@@ -92,9 +92,9 @@ func rubyOpenSSLDefaultCertFile() (string, error) {
 
 func defaultCABundleCandidates() []string {
 	return []string{
-		"/etc/ssl/cert.pem",                     // macOS system export
-		"/etc/ssl/certs/ca-certificates.crt",    // Debian/Ubuntu
-		"/etc/pki/tls/certs/ca-bundle.crt",      // RHEL/Fedora
+		"/etc/ssl/cert.pem",                  // macOS system export
+		"/etc/ssl/certs/ca-certificates.crt", // Debian/Ubuntu
+		"/etc/pki/tls/certs/ca-bundle.crt",   // RHEL/Fedora
 		"/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem",
 		"/opt/homebrew/etc/openssl@3/cert.pem",   // Homebrew OpenSSL 3 (macOS)
 		"/opt/homebrew/etc/openssl@1.1/cert.pem", // Homebrew OpenSSL 1.1 (macOS)
