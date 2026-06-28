@@ -1,6 +1,6 @@
 //go:build darwin
 
-package cmd
+package sudo
 
 /*
 #cgo LDFLAGS: -framework Foundation -framework LocalAuthentication
@@ -11,7 +11,8 @@ import "C"
 
 import "unsafe"
 
-func authenticate(reason string) bool {
+// Authenticate prompts for Touch ID or the device password.
+func Authenticate(reason string) bool {
 	if reason == "" {
 		reason = "Confirm this action"
 	}
