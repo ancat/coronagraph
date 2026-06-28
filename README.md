@@ -4,7 +4,11 @@ In a local development environment, it’s not uncommon to have API credentials 
 
 Coronagraph aims to mitigate these risks by providing a safer way to access and use these credentials. Its main interface is an authenticating proxy. Instead of your developer tools (Github CLI, PyPI, Rubygems, npm, etc) authenticating to remote services using credentials that live in plaintext on disk, they can connect to Coronagraph which will dynamically insert these credentials into outbound HTTP requests. The end result is that your requests are authenticated to the upstream services without clients ever handling any credentials.
 
+![architecture](.github/assets/architecture.svg)
+
 One of Coronagraph’s design principles is to be as quiet as possible. One way it does this is by distinguishing between read-only and read-write API calls. If a request is determined to be read-only, it will be allowed to pass through transparently; if on the other hand it is determined to be read-write, it will escalate to the user via TouchID, just like sudo would. This way for example, you can have one Rubygems API key, but only be notified (and optionally block) when pushing or deleting a package.
+
+![example](.github/assets/coronagraph-in-action.png)
 
 ## Goals
 
