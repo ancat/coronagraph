@@ -98,8 +98,17 @@ func writeShim(opts Options, spec spec) (string, error) {
 	shimPath := filepath.Join(opts.BinDir, spec.name)
 	content := renderScript(realPath, spec.env(opts))
 
+	// Existing shims are read-only; make writable before overwrite.
+	if err := os.Chmod(shimPath, 0o755); err != nil && !os.IsNotExist(err) {
+		return "", fmt.Errorf("prepare shim %q: %w", shimPath, err)
+	}
+
 	if err := os.WriteFile(shimPath, []byte(content), 0o755); err != nil {
 		return "", fmt.Errorf("write shim %q: %w", shimPath, err)
+	}
+
+	if err := os.Chmod(shimPath, 0o555); err != nil {
+		return "", fmt.Errorf("lock shim %q: %w", shimPath, err)
 	}
 
 	return shimPath, nil
