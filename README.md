@@ -15,11 +15,15 @@ More explicitly, Coronagraph’s primary goals are to mitigate three major risks
 
 ## Setup
 
+### Certificates
+
 Because Coronagraph inserts credentials into HTTP requests, it needs to be able to terminate TLS. To do that, we'll use mkcert. I do not recommend you install these certificates to your system store.
 
 ```
 mkcert
 ```
+
+### Credentials
 
 After setting up your certificate, you will need to configure your credentials. Coronagraph comes with `local-vault`, a DotEnv formatted file encrypted at-rest with a passphrase. You can set it up with the `local-keys` command. Init will prompt you for a passphrase that you will need to include with any subsequent decryptions.
 
@@ -29,6 +33,14 @@ cg local-keys edit
 ```
 
 Alternatively, if you have 1password with the op cli installed, you can create a Secure Note with your secrets also in DotEnv format. You will just need to point your config file at the note.
+
+Right now, coronagraph supports Rubygems (gem and bundler) and Github. Set the appropriate values in your secret store and coronagraph will pull them in.
+
+
+| Tool             | Secret name        | Example                       |
+| ---------------- | ------------------ | ----------------------------- |
+| `bundle` / `gem` | `GEM_HOST_API_KEY` | `rubygems_...`                |
+| `gh`             | `GH_TOKEN`         | `gho_...` or `github_pat_...` |
 
 After setting up your credentials, you can configure Coronagraph:
 
@@ -54,16 +66,20 @@ coronagraph:
     key: /Users/omar/certs/rootCA-key.pem
 ```
 
-Then just run `cg serve` and you should be set. At this point, you can point any HTTP client at this proxy. For each client, you will need to configure their TLS settings to include the TLS certificate you used in your config file. See `Credential Support` for more information.
+### Shims
 
-## Credential Support
+Once Coronagraph has your credentials, you need to instruct other programs to use it. First, start the proxy:
 
-Right now, coronagraph supports Rubygems (gem and bundler) and Github.
+```
+cg serve
+```
 
-* Rubygems: `GEM_HOST_API_KEY`
-- `export GEM_HOST_API_KEY=placeholder`
-- `gem yank -p http://localhost:1111 test-gem -v 1.2.3`
+You will be asked to enter your passphrase for local-vault or to unlock 1Password. At this point, you can point any HTTP client at this proxy. For built in supported programs, run the following commands:
 
-* Github: `GH_TOKEN`
-- `export HTTP_PROXY=localhost:11111 HTTPS_PROXY=localhost:11111 GH_TOKEN=placeholder`
-- `gh status`
+```
+cg generate bundles
+cg generate shims
+export PATH="~/.cg/bin":$PATH
+```
+
+The `bundles` command will generate the CA bundles needed by various programs to connect to the proxy. The `shims` command will generate shims for supported programs that transparently force it to use the proxy with the various CA bundles automatically configured for you. Any subsequent invocations of `gh`, `gems`, etc should behave as normal.
