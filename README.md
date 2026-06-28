@@ -9,9 +9,9 @@ One of Coronagraph’s design principles is to be as quiet as possible. One way 
 ## Goals
 
 More explicitly, Coronagraph’s primary goals are to mitigate three major risks that come with plaintext handling of credentials:
-* Credential theft: e.g. via malware that looks for credentials on disk and sends them to a remote attacker
-* Credential abuse/misuse: e.g. via malware that after achieving code execution uses the credentials from the affected system
-* Accidental disclosure: e.g. accidentally pushing files containing credentials to git
+* **Credential theft**: e.g. via malware that looks for credentials on disk and sends them to a remote attacker; whether you use 1password or the built in local vault, there are no credentials on disk to steal.
+* **Credential abuse/misuse**: e.g. via malware that after achieving code execution uses the credentials from the affected system; while some payloads will attempt to use any credentials on the spot, Coronagraph will prompt for any mutative requests, mitigating unintended releases or other potentially destructive changes
+* **Accidental disclosure**: e.g. accidentally pushing files containing credentials to git; similarly to the credential theft scenario, keeping credentials off disk minimizes the likelihood of accidental disclosure
 
 ## Setup
 
