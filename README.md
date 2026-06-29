@@ -10,6 +10,8 @@ One of Coronagraph’s design principles is to be as quiet as possible. One way 
 
 ![example](.github/assets/coronagraph-in-action.png)
 
+**Note that Coronagraph is still a work in progress. It's mac only and it's still a bit sharp around the edges. See the section at the bottom for more context.**
+
 ## Goals
 
 More explicitly, Coronagraph’s primary goals are to mitigate three major risks that come with plaintext handling of credentials:
@@ -87,3 +89,7 @@ export PATH="~/.cg/bin":$PATH
 ```
 
 The `bundles` command will generate the CA bundles needed by various programs to connect to the proxy. The `shims` command will generate shims for supported programs that transparently force it to use the proxy with the various CA bundles automatically configured for you. Any subsequent invocations of `gh`, `gems`, etc should behave as normal.
+
+# Status
+
+Coronagraph is still a WIP. So WIP that it doesn't even have a version number yet. Some planned improvements include better test coverage, support for other services and platforms, and secure key management for CA certificates. And documentation. Really, the only reason it's public right now is to collect feedback and validate my strategies. Feedback is always welcome.
